@@ -1,0 +1,12 @@
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\bin\Debug\ST.exe.config
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\bin\Debug\ST.exe
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\bin\Debug\ST.pdb
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.csprojResolveAssemblyReference.cache
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.Form1.resources
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.Properties.Resources.resources
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.csproj.GenerateResource.Cache
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.exe
+c:\users\user\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.pdb
+C:\Users\User\Documents\Visual Studio 2015\Projects\ST\ST\obj\Debug\ST.InfoForm.resources
+C:\Users\User\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.Form4.resources
+C:\Users\User\documents\visual studio 2015\Projects\ST\ST\obj\Debug\ST.COMPORT.resources
