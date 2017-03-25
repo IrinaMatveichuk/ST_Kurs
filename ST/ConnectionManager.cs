@@ -37,11 +37,6 @@ namespace ST
         private CycleCode coder = new CycleCode();
         public enum MessageType
         {
-            Incoming,
-            Outgoing,
-            Normal,
-            Warning,
-            Error,
             Public,
             Private
         };
@@ -50,11 +45,7 @@ namespace ST
             UPLINK, //кадр установки соединения
             ACK_UPLINK,
             ACK,
-            ACK_DOWNLINK,
             ACK_LINKACTIVE, //кадры -квитанция
-            RET_UPLINK,
-            RET_DOWNLINK,
-            RET_LINKACITVE,
             RET_DAT,
             RET, //кадры - ARQ
             DOWNLINK, //кадр разрыва соединения
@@ -62,7 +53,7 @@ namespace ST
             DAT,
             SUNH, //Кадр синхронизации пользователей
             ACK_SUNH,
-            SUNHP,
+            SUNHP, //Кадр синхронизации параметров
             ACK_SUNHP
         }
         private const byte Start = 0xFF; //стартовый бит
@@ -94,7 +85,7 @@ namespace ST
                     }
                     catch (FormatException ex)
                     {
-                        DisplayData(MessageType.Error, ex.Message, false, f2.messages, comPort);
+                        DisplayData(MessageType.Public, ex.Message, false, f2.messages, comPort);
                     }
                     break;
                 case FrameType.ACK_SUNH:
@@ -200,7 +191,7 @@ namespace ST
                     break;
                 case (byte)FrameType.DOWNLINK:
                     //DisplayData(MessageType.Incoming, DateTime.Now + " DOWNLINK \n", false, list, port);
-                    DisplayData(MessageType.Incoming, " Пользоваель " + Form2.current_user + " вышел из сети", false, list, port);
+                    DisplayData(MessageType.Public, " Пользоваель " + Form2.current_user + " вышел из сети", false, list, port);
                     port.l_connected = false; //сделали порт логически неактивным
                     if (f2.users.Items.Contains(Users[port]))
                         f2.users.Invoke(new Action(() => { f2.users.Items.Remove(Users[port]); })); //убрали имя из списка
@@ -230,7 +221,7 @@ namespace ST
                     //DisplayData(MessageType.Incoming, DateTime.Now + " ACK \n", false, list);
                     break;
                 default:
-                    DisplayData(MessageType.Normal, DateTime.Now + " unknow frame \n", false, list, port);
+                    DisplayData(MessageType.Public, DateTime.Now + " unknow frame \n", false, list, port);
                     break;
                 case (byte)FrameType.RET_DAT:
                     //DisplayData(MessageType.Incoming, DateTime.Now + " RET \n", false, list);
