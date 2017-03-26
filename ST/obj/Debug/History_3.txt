@@ -1,0 +1,7 @@
+SYSTEM> Пользователь 2 активен
+SYSTEM> Пользователь 1 активен
+Я > ffffffff
+Я [2]> ffffffff
+Я [2]> ffffffff
+Я [2]> ffffffff
+SYSTEM> Проверьте соединение 1 кабеля

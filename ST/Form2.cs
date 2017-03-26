@@ -147,7 +147,6 @@ namespace ST
         {
             if (port1.port.DsrHolding && !port1.p_active)
             {
-                //msgListBox.Items.Add("SYSTEM> Подключение 1 установлено");
                 _manager.WriteData(null, ConnectionManager.FrameType.UPLINK, false, port1);
                 port1.my_logic_state = true;
                 port1.p_active = true;
@@ -174,7 +173,6 @@ namespace ST
         {
             if (port2.port.DsrHolding && !port2.p_active)
             {
-                msgListBox.Items.Add("SYSTEM> Подключение 2 установлено");
                 _manager.WriteData(null, ConnectionManager.FrameType.UPLINK, false, port2);
                 port2.my_logic_state = true;
                 port2.p_active = true;

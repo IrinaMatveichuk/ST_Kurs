@@ -90,14 +90,14 @@ namespace ST
                     break;
                 case FrameType.ACK_SUNH:
                     frameFields = new List<byte> { Start, (byte)currentFrameType };
-                    frameFields.Add((byte)coder.Code(msg).Length);
-                    frameFields.AddRange(coder.Code(msg));
+                    frameFields.Add((byte)coder.Code1(msg).Length);
+                    frameFields.AddRange(coder.Code1(msg));
                     comPort.port.Write(frameFields.ToArray(), 0, frameFields.Count);
                     break;
                 case FrameType.SUNHP:
                     frameFields = new List<byte> { Start, (byte)currentFrameType };
-                    frameFields.Add((byte)coder.Code(msg).Length);
-                    frameFields.AddRange(coder.Code(msg));
+                    frameFields.Add((byte)coder.Code1(msg).Length);
+                    frameFields.AddRange(coder.Code1(msg));
                     comPort.port.Write(frameFields.ToArray(), 0, frameFields.Count);
                     break;
                 default:
@@ -164,7 +164,7 @@ namespace ST
                     var Count = Convert.ToInt32(port.port.ReadByte());
                     var text = new byte[Count];
                     port.port.Read(text, 0, Count);
-                    var decoded = coder.Decode(text);
+                    var decoded = coder.Decode1(text);
                     if (Convert.ToInt32(decoded) >= port.speed)
                         port.port.BaudRate = port.speed;
                     else if (Convert.ToInt32(decoded) < port.speed)
@@ -181,7 +181,7 @@ namespace ST
                     Count = Convert.ToInt32(port.port.ReadByte());
                     text = new byte[Count];
                     port.port.Read(text, 0, Count);
-                    decoded = coder.Decode(text);
+                    decoded = coder.Decode1(text);
                     if (Users.ContainsKey(port))
                         Users.Remove(port);
                     Users.Add(port, decoded);
@@ -212,8 +212,8 @@ namespace ST
                         {
                             DisplayData(MessageType.Private, decoded, true, list, port);
                         }
+                        WriteData(null, FrameType.ACK, false, port);
                     }
-                    WriteData(null, FrameType.ACK, false, port);
                     break;
                 case (byte)FrameType.ACK:
                     reSendCount = 3;
@@ -224,7 +224,7 @@ namespace ST
                     DisplayData(MessageType.Public, DateTime.Now + " unknow frame \n", false, list, port);
                     break;
                 case (byte)FrameType.RET_DAT:
-                    //DisplayData(MessageType.Incoming, DateTime.Now + " RET \n", false, list);
+                    //DisplayData(MessageType.Public, DateTime.Now + " RET__DAT \n", false, list, port);
                     if (reSendCount > 0)
                     {
                         reSendCount--;
@@ -235,7 +235,8 @@ namespace ST
                     }
                     else
                     {
-                        reSendCount = 3;
+                        f2.messages.Invoke(new Action(() => { f2.messages.Items.Add("       ...не удалось отправить сообщение"); }));
+                        port.send_timer.Stop();
                     }
                     break;
                 case (byte)FrameType.RET:
