@@ -75,6 +75,7 @@ namespace ST
                                 }
                             }
                             msgListBox.Items.Add("Я > " + message);
+                            msgListBox.TopIndex = msgListBox.Items.Count - 1;
                             _manager.WriteHistory("Я > " + message);
                             ConnectionManager.last_msg_stat = false;
                         }
@@ -93,6 +94,7 @@ namespace ST
                             }
                         }
                         msgListBox.Items.Add("Я [" + selected_user + "]> " + message);
+                        msgListBox.TopIndex = msgListBox.Items.Count - 1;
                         _manager.WriteHistory("Я [" + selected_user + "]> " + message);
                         ConnectionManager.last_msg_stat = true;
                     }
@@ -114,18 +116,18 @@ namespace ST
             sendToAllCheck.CheckedChanged += checkChanged;
             current_user = Form1.CurrentUser;
             disconnectButton.Enabled = false;
+            sendButton.Enabled = false;
             path = Path.Combine(this_path, "History_" + current_user + ".txt");
             if (File.Exists(path))
                 File.Delete(path);
             File.Create(path).Dispose();
-            ConnectionManager.f2.CreateForm2(sendButton, connectButton, disconnectButton, msgListBox, MsgTextBox, usersListBox);
+            ConnectionManager.f2.CreateForm2(sendButton, connectButton, disconnectButton, msgListBox, MsgTextBox, usersListBox, progressBar1);
         }
 
         private void connectButton_Click(object sender, EventArgs e)
         {
             connectButton.Enabled = false;
-
-            //msgListBox.Items.Add("SYSTEM> Ожидание подключения...");
+            progressBar1.Visible = true;
             _phys_manager.Connect(port1, port2);
         }
 
@@ -147,6 +149,7 @@ namespace ST
         {
             if (port1.port.DsrHolding && !port1.p_active)
             {
+                progressBar1.Value = 25;
                 _manager.WriteData(null, ConnectionManager.FrameType.UPLINK, false, port1);
                 port1.my_logic_state = true;
                 port1.p_active = true;
@@ -156,6 +159,7 @@ namespace ST
             {
 
                 msgListBox.Items.Add("SYSTEM> Проверьте соединение 1 кабеля");
+                msgListBox.TopIndex = msgListBox.Items.Count - 1;
                 _manager.WriteHistory("SYSTEM> Проверьте соединение 1 кабеля");
                 port1.logicConnectionTimer.Stop();
                 ConnectionManager.ActivePorts[port1.port] = false;
@@ -173,6 +177,7 @@ namespace ST
         {
             if (port2.port.DsrHolding && !port2.p_active)
             {
+                progressBar1.Value = 25;
                 _manager.WriteData(null, ConnectionManager.FrameType.UPLINK, false, port2);
                 port2.my_logic_state = true;
                 port2.p_active = true;
@@ -181,6 +186,8 @@ namespace ST
             else if (!port2.port.DsrHolding && port2.p_active)
             {
                 msgListBox.Items.Add("SYSTEM> Проверьте соединение 2 кабеля");
+                msgListBox.TopIndex = msgListBox.Items.Count - 1;
+                _manager.WriteHistory("SYSTEM> Проверьте соединение 2 кабеля");
                 port2.logicConnectionTimer.Stop();
                 ConnectionManager.ActivePorts[port2.port] = false;
                 port2.l_connected = false;

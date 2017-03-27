@@ -42,7 +42,7 @@ namespace ST
                 array1[k] = Convert.ToByte(single, 2);
                 k++;
             }
-            if (!mistake) return "";
+            if (mistake) return "";
             else
             {
                 char[] char_array = Encoding.Unicode.GetChars(array1);
@@ -112,15 +112,25 @@ namespace ST
         {
             string g = "10011"; //порождающий полином
             string ost = division(str, g); //деление на порождающий полином
-            if (ost == "")
+            string ost1;
+            if (ost == "") //проверяем синдром 1 раз
             {
                 mistake = false;
                 return str.Substring(3, 8);
             }
             else
             {
-                mistake = true;
-                return str.Substring(3, 8);
+                ost1 = division(str, g);
+                if (ost1 == "") //проверяем синдром 2 раз
+                {
+                    mistake = false;
+                    return str.Substring(3, 8);
+                }
+                else
+                {
+                    mistake = true;
+                    return str.Substring(3, 8);
+                }
             }
         }
 

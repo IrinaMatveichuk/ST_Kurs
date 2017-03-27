@@ -43,6 +43,7 @@
             this.sendToAllCheck = new System.Windows.Forms.CheckBox();
             this.sendToLabel = new System.Windows.Forms.Label();
             this.emptyMsgLabel = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -185,11 +186,22 @@
             this.emptyMsgLabel.Text = "Пустое собщение";
             this.emptyMsgLabel.Visible = false;
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(126, 47);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(176, 23);
+            this.progressBar1.Step = 25;
+            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.progressBar1.TabIndex = 13;
+            this.progressBar1.Visible = false;
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(608, 327);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.emptyMsgLabel);
             this.Controls.Add(this.sendToLabel);
             this.Controls.Add(this.sendToAllCheck);
@@ -231,5 +243,6 @@
         private System.Windows.Forms.CheckBox sendToAllCheck;
         private System.Windows.Forms.Label sendToLabel;
         private System.Windows.Forms.Label emptyMsgLabel;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }

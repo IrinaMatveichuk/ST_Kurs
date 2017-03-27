@@ -19,7 +19,8 @@ namespace ST
         public ListBox messages;
         public TextBox msg_to_send;
         public ListBox users;
-        public void CreateForm2(Button send1, Button connect1, Button disconnect1, ListBox messages1, TextBox msg_to_send1, ListBox users1)
+        public ProgressBar bar;
+        public void CreateForm2(Button send1, Button connect1, Button disconnect1, ListBox messages1, TextBox msg_to_send1, ListBox users1, ProgressBar bar1)
         {
             send = send1;
             connect = connect1;
@@ -27,6 +28,7 @@ namespace ST
             messages = messages1;
             msg_to_send = msg_to_send1;
             users = users1;
+            bar = bar1;
         }
     }
   
@@ -89,13 +91,13 @@ namespace ST
                     }
                     break;
                 case FrameType.ACK_SUNH:
-                    frameFields = new List<byte> { Start, (byte)currentFrameType };
+                    //frameFields = new List<byte> { Start, (byte)currentFrameType };
                     frameFields.Add((byte)coder.Code1(msg).Length);
                     frameFields.AddRange(coder.Code1(msg));
                     comPort.port.Write(frameFields.ToArray(), 0, frameFields.Count);
                     break;
                 case FrameType.SUNHP:
-                    frameFields = new List<byte> { Start, (byte)currentFrameType };
+                    //frameFields = new List<byte> { Start, (byte)currentFrameType };
                     frameFields.Add((byte)coder.Code1(msg).Length);
                     frameFields.AddRange(coder.Code1(msg));
                     comPort.port.Write(frameFields.ToArray(), 0, frameFields.Count);
@@ -123,6 +125,7 @@ namespace ST
                 else msg_to_display = "SYSTEM> " + msg;
             }
             list.Invoke(new Action(() => { list.Items.Add(msg_to_display); }));
+            list.Invoke(new Action(() => { list.TopIndex = list.Items.Count - 1; }));
             WriteHistory(msg_to_display);
             list.SelectedItem = -1;
         } //Вывод сообщений на форму
@@ -141,6 +144,7 @@ namespace ST
                     break;
                 case (byte)FrameType.ACK_UPLINK:
                     //DisplayData(MessageType.Incoming, DateTime.Now + " ACK_UPLINK \n", false, list, port);
+                    f2.bar.Invoke(new Action(() => { f2.bar.Value = 50; }));
                     port.l_connected = true;
                     if (port.p_connected)
                         WriteData(null, FrameType.SUNH, false, port);
@@ -170,6 +174,7 @@ namespace ST
                     else if (Convert.ToInt32(decoded) < port.speed)
                         port.port.BaudRate = Convert.ToInt32(decoded);
                     port.p_connected = true;
+                    f2.bar.Invoke(new Action(() => { f2.bar.Value = 75; }));
                     WriteData(null, FrameType.SUNH, false, port);
                     break;
                 case (byte)FrameType.SUNH:
@@ -178,6 +183,7 @@ namespace ST
                     break;
                 case (byte)FrameType.ACK_SUNH:
                     //DisplayData(MessageType.Incoming, DateTime.Now + " ACK_SUNH \n", false, list, port);
+                    f2.bar.Invoke(new Action(() => { f2.bar.Value = 10; }));
                     Count = Convert.ToInt32(port.port.ReadByte());
                     text = new byte[Count];
                     port.port.Read(text, 0, Count);
@@ -186,12 +192,18 @@ namespace ST
                         Users.Remove(port);
                     Users.Add(port, decoded);
                     f2.disconnect.Invoke(new Action(() => { f2.disconnect.Enabled = true; }));
-                    f2.messages.Invoke(new Action(() => { DisplayData(MessageType.Public, "Пользователь " + decoded + " активен", false, f2.messages, port); }));                   
+                    f2.messages.Invoke(new Action(() => { DisplayData(MessageType.Public, "Пользователь " + decoded + " активен", false, f2.messages, port); }));
+                    f2.messages.Invoke(new Action(() => { f2.messages.TopIndex = f2.messages.Items.Count - 1; }));
+                    WriteHistory("Пользователь " + decoded + " активен");
                     ShowUsers(decoded, list2);
+                    f2.bar.Invoke(new Action(() => { f2.bar.Visible = false; }));
+                    f2.connect.Invoke(new Action(() => { f2.connect.Enabled = true; }));
                     break;
                 case (byte)FrameType.DOWNLINK:
                     //DisplayData(MessageType.Incoming, DateTime.Now + " DOWNLINK \n", false, list, port);
-                    DisplayData(MessageType.Public, " Пользоваель " + Form2.current_user + " вышел из сети", false, list, port);
+                    DisplayData(MessageType.Public, "Пользоваель " + Form2.current_user + " вышел из сети", false, list, port);
+                    f2.messages.Invoke(new Action(() => { f2.messages.TopIndex = f2.messages.Items.Count - 1; }));
+                    WriteHistory("Пользоваель " + Form2.current_user + " вышел из сети");
                     port.l_connected = false; //сделали порт логически неактивным
                     if (f2.users.Items.Contains(Users[port]))
                         f2.users.Invoke(new Action(() => { f2.users.Items.Remove(Users[port]); })); //убрали имя из списка
