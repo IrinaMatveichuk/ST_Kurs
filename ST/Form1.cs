@@ -46,7 +46,7 @@ namespace ST
         private void button1_Click(object sender, EventArgs e)
         {
             port1_check = false;
-            var allUsers = new List<string> { "1", "2", "3", "Ира", "Уля", "Марина", "Ira", "Ulya", "Marina"};
+            var allUsers = new List<string> { "A", "B", "C", "D", "Ира", "Уля", "Марина", "Ira", "Ulya", "Marina"};
             if (!allUsers.Contains(userName.Text))
                 errorLabel.Visible = true;
             else
@@ -76,8 +76,8 @@ namespace ST
                         ComPort2.DiscardInBuffer();
                         ConnectionManager.Speeds.Add(ComPort1, Convert.ToInt32(com1_speed));
                         ConnectionManager.Speeds.Add(ComPort2, Convert.ToInt32(com2_speed));
-                        ConnectionManager.ActivePorts.Add(ComPort1, false);
-                        ConnectionManager.ActivePorts.Add(ComPort2, false);
+                        //ConnectionManager.ActivePorts.Add(ComPort1, false);
+                        //ConnectionManager.ActivePorts.Add(ComPort2, false);
                         CurrentUser = userName.Text;
                         Form2 f2 = new Form2();
                         f2.Show();

@@ -112,25 +112,15 @@ namespace ST
         {
             string g = "10011"; //порождающий полином
             string ost = division(str, g); //деление на порождающий полином
-            string ost1;
-            if (ost == "") //проверяем синдром 1 раз
+            if (ost == "") //проверяем синдром
             {
                 mistake = false;
                 return str.Substring(3, 8);
             }
             else
             {
-                ost1 = division(str, g);
-                if (ost1 == "") //проверяем синдром 2 раз
-                {
-                    mistake = false;
-                    return str.Substring(3, 8);
-                }
-                else
-                {
-                    mistake = true;
-                    return str.Substring(3, 8);
-                }
+                mistake = true;
+                return str.Substring(3, 8);
             }
         }
 

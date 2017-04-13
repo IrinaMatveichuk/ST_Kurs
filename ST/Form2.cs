@@ -23,6 +23,8 @@ namespace ST
         public bool l_connected; //флаг на установку логического соединения
         public bool linkactive; //флаг на поддержание логического соединения
         public int linkactive_try; //колво попыток для поддержания пользователя в активном состоянии
+        public bool timerstop;
+        public int count_try;
         public System.Windows.Forms.Timer logicConnectionTimer = new System.Windows.Forms.Timer(); //таймер на установку логического соединения
         public System.Windows.Forms.Timer send_timer = new System.Windows.Forms.Timer(); //таймер на отправку сообщения
         public System.Windows.Forms.Timer connectionTimer = new System.Windows.Forms.Timer(); //таймер физического соединения
@@ -33,7 +35,7 @@ namespace ST
         private ConnectionManager _manager = new ConnectionManager();
         private PhysicalConnection _phys_manager = new PhysicalConnection();
         public static string selected_user;
-        string this_path = Directory.GetCurrentDirectory();
+        public static string this_path = Directory.GetCurrentDirectory();
         public static string path;
         public static COMPORT port1 = new COMPORT();
         public static COMPORT port2 = new COMPORT();
@@ -55,6 +57,7 @@ namespace ST
                 if (message == "") emptyMsgLabel.Visible = true;
                 else
                 {
+                    emptyMsgLabel.Visible = false;
                     if (sendToAllCheck.Checked == true)
                     {
                         if (usersListBox.Items.Count == 0) MessageBox.Show("Нет пользователей в сети");
@@ -69,6 +72,7 @@ namespace ST
                                         if (ConnectionManager.Users[a] == Convert.ToString(usersListBox.Items[i]))
                                         {
                                             _manager.WriteData(message, ConnectionManager.FrameType.DAT, false, a);
+                                            a.timerstop = false;
                                             a.send_timer.Start();
                                         }
                                     }
@@ -77,6 +81,7 @@ namespace ST
                             msgListBox.Items.Add("Я > " + message);
                             msgListBox.TopIndex = msgListBox.Items.Count - 1;
                             _manager.WriteHistory("Я > " + message);
+                            MsgTextBox.Clear();
                             ConnectionManager.last_msg_stat = false;
                         }
                     }
@@ -89,6 +94,7 @@ namespace ST
                                 if (ConnectionManager.Users[a] == selected_user)
                                 {
                                     _manager.WriteData(message, ConnectionManager.FrameType.DAT, true, a);
+                                    a.timerstop = false;
                                     a.send_timer.Start();
                                 }
                             }
@@ -96,6 +102,7 @@ namespace ST
                         msgListBox.Items.Add("Я [" + selected_user + "]> " + message);
                         msgListBox.TopIndex = msgListBox.Items.Count - 1;
                         _manager.WriteHistory("Я [" + selected_user + "]> " + message);
+                        MsgTextBox.Clear();
                         ConnectionManager.last_msg_stat = true;
                     }
                 }
@@ -108,8 +115,6 @@ namespace ST
             this.FormClosing += Form2_FormClosing;
             usersListBox.Click += usersListBox_Click;
             path = Path.Combine(this_path, "History_" + current_user + ".txt");
-            if (File.Exists(path))
-                File.Delete(path);
 
             SetParametrs(port1, port2);
 
@@ -140,6 +145,7 @@ namespace ST
             if (port2.p_active)
                 _manager.WriteData(null, ConnectionManager.FrameType.DOWNLINK, false, port2);
             usersListBox.Items.Clear();
+            msgListBox.Items.Clear();
             Form4 f4 = new Form4();
             f4.ShowDialog();
         }
@@ -162,7 +168,7 @@ namespace ST
                 msgListBox.TopIndex = msgListBox.Items.Count - 1;
                 _manager.WriteHistory("SYSTEM> Проверьте соединение 1 кабеля");
                 port1.logicConnectionTimer.Stop();
-                ConnectionManager.ActivePorts[port1.port] = false;
+                //ConnectionManager.ActivePorts[port1.port] = false;
                 port1.l_connected = false;
                 port1.linkactive = false;
                 port1.my_logic_state = false;
@@ -189,7 +195,7 @@ namespace ST
                 msgListBox.TopIndex = msgListBox.Items.Count - 1;
                 _manager.WriteHistory("SYSTEM> Проверьте соединение 2 кабеля");
                 port2.logicConnectionTimer.Stop();
-                ConnectionManager.ActivePorts[port2.port] = false;
+                //ConnectionManager.ActivePorts[port2.port] = false;
                 port2.l_connected = false;
                 port2.linkactive = false;
                 port2.my_logic_state = false;
@@ -215,7 +221,7 @@ namespace ST
                 }
                 else
                 {
-                    ConnectionManager.ActivePorts[port1.port] = false;
+                    //ConnectionManager.ActivePorts[port1.port] = false;
                     port1.l_connected = false;
                     port1.linkactive_try = 0;
                 }
@@ -235,7 +241,7 @@ namespace ST
                 }
                 else
                 {
-                    ConnectionManager.ActivePorts[port2.port] = false;
+                    //ConnectionManager.ActivePorts[port2.port] = false;
                     port2.l_connected = false;
                     port2.linkactive_try = 0;
                 }
@@ -282,6 +288,38 @@ namespace ST
             }
         }
         #endregion
+
+        private void send_timer1_Tick(object sender, EventArgs e)
+        {
+            port1.count_try++;
+            if (port1.timerstop && port1.count_try<10)
+            {
+                port1.send_timer.Stop();
+                port1.count_try = 0;
+            }
+            else if (port1.count_try==10)
+            {
+                port1.send_timer.Stop();
+                port1.count_try = 0;
+                _manager.WriteData(null, ConnectionManager.FrameType.RET_DAT, true, port1);
+            }
+        }
+
+        private void send_timer2_Tick(object sender, EventArgs e)
+        {
+            port2.count_try++;
+            if (port2.timerstop && port2.count_try < 10)
+            {
+                port2.send_timer.Stop();
+                port2.count_try = 0;
+            }
+            else if (port2.count_try == 10)
+            {
+                port2.send_timer.Stop();
+                port2.count_try = 0;
+                _manager.WriteData(null, ConnectionManager.FrameType.RET_DAT, true, port2);
+            }
+        }
 
         private void Form2_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -332,10 +370,13 @@ namespace ST
             port1.my_logic_state = false;
             port1.p_active = false;
             port1.p_connected = false;
+            port1.timerstop = false;
             port1.linkactive_try = 0;
             port1.logicConnectionTimer.Tick += new EventHandler(logicConnectionTimer1_Tick);
             port1.connectionTimer.Tick += new EventHandler(connectionTimer1_Tick);
+            port1.send_timer.Tick += new EventHandler(send_timer1_Tick);
             port1.logicConnectionTimer.Interval = 7000;
+            port1.send_timer.Interval = 500;
 
             port2.port = Form1.ComPort2;
             port2.port.DataReceived += comPort2_DataReceived;
@@ -345,10 +386,13 @@ namespace ST
             port2.my_logic_state = false;
             port2.p_active = false;
             port2.p_connected = false;
+            port1.timerstop = false;
             port2.linkactive_try = 0;
             port2.logicConnectionTimer.Tick += new EventHandler(logicConnectionTimer2_Tick);
             port2.connectionTimer.Tick += new EventHandler(connectionTimer2_Tick);
+            port1.send_timer.Tick += new EventHandler(send_timer2_Tick);
             port2.logicConnectionTimer.Interval = 7000;
+            port2.send_timer.Interval = 500;
         }
     }
 }

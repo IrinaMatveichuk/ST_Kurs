@@ -46,22 +46,21 @@ namespace ST
         {
             UPLINK, //кадр установки соединения
             ACK_UPLINK,
-            ACK,
+            LINKACTIVE,
             ACK_LINKACTIVE, //кадры -квитанция
+            DAT,
+            ACK,
             RET_DAT,
             RET, //кадры - ARQ
             DOWNLINK, //кадр разрыва соединения
-            LINKACTIVE,
-            DAT,
             SUNH, //Кадр синхронизации пользователей
             ACK_SUNH,
             SUNHP, //Кадр синхронизации параметров
-            ACK_SUNHP
         }
         private const byte Start = 0xFF; //стартовый бит
         public static Dictionary<COMPORT, string> Users = new Dictionary<COMPORT, string>();
         public static Dictionary<SerialPort, Int32> Speeds = new Dictionary<SerialPort, Int32>();
-        public static Dictionary<SerialPort, bool> ActivePorts = new Dictionary<SerialPort, bool>();
+        //public static Dictionary<SerialPort, bool> ActivePorts = new Dictionary<SerialPort, bool>();
         private int reSendCount = 3;
         private byte previousOperation;
         public static string last_msg;
@@ -183,27 +182,33 @@ namespace ST
                     break;
                 case (byte)FrameType.ACK_SUNH:
                     //DisplayData(MessageType.Incoming, DateTime.Now + " ACK_SUNH \n", false, list, port);
-                    f2.bar.Invoke(new Action(() => { f2.bar.Value = 10; }));
+                    f2.bar.Invoke(new Action(() => { f2.bar.Value = 100; }));
                     Count = Convert.ToInt32(port.port.ReadByte());
                     text = new byte[Count];
                     port.port.Read(text, 0, Count);
                     decoded = coder.Decode1(text);
                     if (Users.ContainsKey(port))
                         Users.Remove(port);
-                    Users.Add(port, decoded);
+                    try
+                    {
+                        Users.Add(port, decoded);
+                    }
+                    catch
+                    {
+                        Form2.port1.port = Form1.ComPort1;
+                        Form2.port2.port = Form1.ComPort2;
+                    }
                     f2.disconnect.Invoke(new Action(() => { f2.disconnect.Enabled = true; }));
                     f2.messages.Invoke(new Action(() => { DisplayData(MessageType.Public, "Пользователь " + decoded + " активен", false, f2.messages, port); }));
                     f2.messages.Invoke(new Action(() => { f2.messages.TopIndex = f2.messages.Items.Count - 1; }));
-                    WriteHistory("Пользователь " + decoded + " активен");
                     ShowUsers(decoded, list2);
                     f2.bar.Invoke(new Action(() => { f2.bar.Visible = false; }));
-                    f2.connect.Invoke(new Action(() => { f2.connect.Enabled = true; }));
+                    f2.send.Invoke(new Action(() => { f2.send.Enabled = true; }));
                     break;
                 case (byte)FrameType.DOWNLINK:
                     //DisplayData(MessageType.Incoming, DateTime.Now + " DOWNLINK \n", false, list, port);
-                    DisplayData(MessageType.Public, "Пользоваель " + Form2.current_user + " вышел из сети", false, list, port);
+                    DisplayData(MessageType.Public, "Пользоваель " + Users[port] + " вышел из сети", false, list, port);
                     f2.messages.Invoke(new Action(() => { f2.messages.TopIndex = f2.messages.Items.Count - 1; }));
-                    WriteHistory("Пользоваель " + Form2.current_user + " вышел из сети");
                     port.l_connected = false; //сделали порт логически неактивным
                     if (f2.users.Items.Contains(Users[port]))
                         f2.users.Invoke(new Action(() => { f2.users.Items.Remove(Users[port]); })); //убрали имя из списка
@@ -228,8 +233,8 @@ namespace ST
                     }
                     break;
                 case (byte)FrameType.ACK:
-                    reSendCount = 3;
-                    port.send_timer.Stop();
+                    port.timerstop = true;
+                    //port.send_timer.Stop();
                     //DisplayData(MessageType.Incoming, DateTime.Now + " ACK \n", false, list);
                     break;
                 default:
